@@ -1,0 +1,11 @@
+{
+    "terminal.integrated.env.linux": {
+        "PATH": "/home/danieldemcak/.platformio/penv/bin:/home/danieldemcak/.platformio/penv:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin",
+        "PLATFORMIO_CALLER": "vscode"
+    },
+    "C_Cpp.dimInactiveRegions": false,
+    "git.ignoreLimitWarning": true,
+    "files.associations": {
+        "bootloader_util.h": "c"
+    }
+}

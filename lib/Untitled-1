@@ -1,0 +1,103 @@
+#include "mbed.h"
+#include "ble/BLE.h"
+#include "ble/services/HeartRateService.h"
+#include "ble/services/BatteryService.h"
+#include "ble/services/DeviceInformationService.h"
+ 
+DigitalOut led1(LED1);
+ 
+const static char     DEVICE_NAME[]        = "SKUSKA";
+static const uint16_t uuid16_list[]        = {GattService::UUID_HEART_RATE_SERVICE,
+                                              GattService::UUID_DEVICE_INFORMATION_SERVICE};
+static volatile bool  triggerSensorPolling = false;
+
+Serial pc(USBTX, USBRX);
+
+uint8_t hrmCounter = 100; // init HRM to 100bps
+uint16_t testik =15;
+
+InterruptIn button1(p13);
+
+HeartRateService         *hrService;
+DeviceInformationService *deviceInfo;
+ 
+void disconnectionCallback(const Gap::DisconnectionCallbackParams_t *params)
+{
+    BLE::Instance(BLE::DEFAULT_INSTANCE).gap().startAdvertising(); // restart advertising
+}
+
+
+void periodicCallback(void)
+{
+    led1 = !led1; /* Do blinky on LED1 while we're waiting for BLE events */
+ 
+    /* Note that the periodicCallback() executes in interrupt context, so it is safer to do
+     * heavy-weight sensor polling from the main thread. */
+    triggerSensorPolling = true;
+}
+ 
+void bleInitComplete(BLE::InitializationCompleteCallbackContext *params)
+{
+    BLE &ble          = params->ble;
+    ble_error_t error = params->error;
+ 
+    if (error != BLE_ERROR_NONE) {
+        return;
+    }
+ 
+    ble.gap().onDisconnection(disconnectionCallback);
+ 
+    /* Setup primary service. */
+    hrService = new HeartRateService(ble, hrmCounter, HeartRateService::LOCATION_FINGER);
+ 
+    /* Setup auxiliary service. */
+    deviceInfo = new DeviceInformationService(ble, "kkk", "Model1", "SN1", "hw-rev1", "fw-rev1", "soft-rev1");
+ 
+    /* Setup advertising. */
+    ble.gap().accumulateAdvertisingPayload(GapAdvertisingData::BREDR_NOT_SUPPORTED | GapAdvertisingData::LE_GENERAL_DISCOVERABLE);
+    ble.gap().accumulateAdvertisingPayload(GapAdvertisingData::COMPLETE_LIST_16BIT_SERVICE_IDS, (uint8_t *)uuid16_list, sizeof(uuid16_list));
+    ble.gap().accumulateAdvertisingPayload(GapAdvertisingData::GENERIC_HEART_RATE_SENSOR);
+    ble.gap().accumulateAdvertisingPayload(GapAdvertisingData::COMPLETE_LOCAL_NAME, (uint8_t *)DEVICE_NAME, sizeof(DEVICE_NAME));
+    ble.gap().setAdvertisingType(GapAdvertisingParams::ADV_CONNECTABLE_UNDIRECTED);
+    ble.gap().setAdvertisingInterval(100); /* 1000ms */
+    ble.gap().startAdvertising();
+}
+
+void click()
+{
+testik +=20;
+pc.printf("%d\n",testik);
+}
+ 
+int main(void)
+{
+    led1 = 1;
+    Ticker ticker;
+    ticker.attach(periodicCallback,0.5); // blink LED every second
+    button1.rise(&click); //moj kod
+    BLE& ble = BLE::Instance(BLE::DEFAULT_INSTANCE);
+    ble.init(bleInitComplete);
+ 
+    /* SpinWait for initialization to complete. This is necessary because the
+     * BLE object is used in the main loop below. */
+    while (ble.hasInitialized()  == false) { /* spin loop */ }
+ 
+    // infinite loop
+    while (1) {
+        // check for trigger from periodicCallback()
+        if (triggerSensorPolling && ble.getGapState().connected) {
+            triggerSensorPolling = false;
+ 
+            // Do blocking calls or whatever is necessary for sensor polling.
+            // In our case, we simply update the HRM measurement.
+            
+            hrService->updateHeartRate(testik);
+        } else {
+            ble.waitForEvent(); // low power wait for event
+        }
+    }
+}
+ 
+            
+
+ 
