@@ -1,18 +1,18 @@
 
 
-// #include "mbed.h"
+#include "mbed.h"
  
-// DigitalOut myled(LED1);
-// DigitalOut led2(LED2);
+DigitalOut myled(LED1);
+DigitalOut led2(LED2);
  
-// int main() {
-//     while(1) {
-//         led2 =!led2;
-//         myled=!myled;
-//         wait(2);
+int main() {
+    while(1) {
+        led2 =!led2;
+        myled=!myled;
+        wait(2);
         
-//     }
-// }
+    }
+}
 
 
 /*
@@ -2452,177 +2452,168 @@ int main() {
 
 //..........................................Posielanie dat............................................................
 
-#include "mbed.h"
-#include "ble/BLE.h"
-//#include "ble/services/HealthThermometerService.h"
-#include "ble/services/GatService.h"
+// #include "mbed.h"
+// #include "ble/BLE.h"
+// //#include "ble/services/HealthThermometerService.h"
+// #include "ble/services/GatService.h"
 
-
-
-
-//#include "ble/services/HeartRateService-backup.h"
  
-DigitalOut led1(LED1);
+// DigitalOut led1(LED1);
  
-static HealthThermometerService *thermometerServicePtr;
-//static DFUService *dfuPtr;
+// static HealthThermometerService *thermometerServicePtr;
+// //static DFUService *dfuPtr;
  
-static const char     DEVICE_NAME[]        = "CATS";
-static const uint16_t uuid16_list[]        = {GattService::UUID_HEALTH_THERMOMETER_SERVICE};
-static volatile bool  triggerSensorPolling = false;
-static float          currentTemperature   = 0;
-static float          temp[5000];
-static float          array_BPM[]={2,4,6,4,10,8,12,4,9,15};
-static int            i                    =0;
-static int            test_of_sleep        =0;
-static volatile bool  trigger              =false;
-InterruptIn button1(p13);
-//uint16_t customServiceUUID = 0x1812;
-uint16_t writeCharUUID = 0x2A59;
-static uint8_t writeValue[10] = {0};
-uint16_t writeCharUUID2 = 0x2A58;
-static uint8_t writeValue2[10] = {0};
+// static const char     DEVICE_NAME[]        = "CATS";
+// static const uint16_t uuid16_list[]        = {GattService::UUID_HEALTH_THERMOMETER_SERVICE};
+// static volatile bool  triggerSensorPolling = false;
+// static float          currentTemperature   = 0;
+// static float          temp[5000];
+// static float          array_BPM[]={2,4,6,4,10,8,12,4,9,15};
+// static int            i                    =0;
+// static int            test_of_sleep        =0;
+// static volatile bool  trigger              =false;
+// InterruptIn button1(p13);
+// //uint16_t customServiceUUID = 0x1812;
+// uint16_t writeCharUUID = 0x2A59;
+// static uint8_t writeValue[10] = {0};
+// uint16_t writeCharUUID2 = 0x2A58;
+// static uint8_t writeValue2[10] = {0};
 
 
-WriteOnlyArrayGattCharacteristic<uint8_t, sizeof(writeValue)> writeChar(writeCharUUID, writeValue);
-WriteOnlyArrayGattCharacteristic<uint8_t, sizeof(writeValue2)> writeChar2(writeCharUUID2, writeValue2);
-GattCharacteristic *characteristics[] = {&writeChar,&writeChar2};
-GattService customService(0x1815, characteristics, sizeof(characteristics) / sizeof(GattCharacteristic *));
+// WriteOnlyArrayGattCharacteristic<uint8_t, sizeof(writeValue)> writeChar(writeCharUUID, writeValue);
+// WriteOnlyArrayGattCharacteristic<uint8_t, sizeof(writeValue2)> writeChar2(writeCharUUID2, writeValue2);
+// GattCharacteristic *characteristics[] = {&writeChar,&writeChar2};
+// GattService customService(0x1815, characteristics, sizeof(characteristics) / sizeof(GattCharacteristic *));
 
 
 
-//static uint8_t AdvData[] = {0x07,0x02,0x03,0x04,0x05,0x03,0x04,0x05,0x03,0x04,0x05,0x03,0x04,0x255,0x24,0x04,0x05,0x03,0x04,0x05,0x03,0x04,0x04,0x05,0x65,0x34};
+// //static uint8_t AdvData[] = {0x07,0x02,0x03,0x04,0x05,0x03,0x04,0x05,0x03,0x04,0x05,0x03,0x04,0x255,0x24,0x04,0x05,0x03,0x04,0x05,0x03,0x04,0x04,0x05,0x65,0x34};
  
-void blik()
-{
-    led1=!led1;
-}
+// void blik()
+// {
+//     led1=!led1;
+// }
  
-/* Restart Advertising on disconnection*/
-void disconnectionCallback(const Gap::DisconnectionCallbackParams_t *params)
-{
-    BLE::Instance().gap().startAdvertising();
-}
+// /* Restart Advertising on disconnection*/
+// void disconnectionCallback(const Gap::DisconnectionCallbackParams_t *params)
+// {
+//     BLE::Instance().gap().startAdvertising();
+// }
 
 
 
-void click()
-{
-    for (int i = 0; i < 5000; i++)
-    {
-        temp[i] = i;
-    }
-    trigger = true;
-}
-void periodicCallback(void)
-{
-    triggerSensorPolling = true;
-}
-void writeCharCallback(const GattWriteCallbackParams *params)
-{
+// void click()
+// {
+//     for (int i = 0; i < 5000; i++)
+//     {
+//         temp[i] = i;
+//     }
+//     trigger = true;
+// }
+// void periodicCallback(void)
+// {
+//     triggerSensorPolling = true;
+// }
+// void writeCharCallback(const GattWriteCallbackParams *params)
+// {
   
-    if (params->data[0] <= 50)
-        {
-        blik();
-        click();
-        }
-}
+//     if (params->data[0] <= 50)
+//         {
+//         blik();
+//         click();
+//         }
+// }
  
-/**
- * This function is called when the ble initialization process has failed
- */
-void onBleInitError(BLE &ble, ble_error_t error)
-{
-    /* Avoid compiler warnings */
-    (void) ble;
-    (void) error;
-    /* Initialization error handling should go here */
-}
+// /**
+//  * This function is called when the ble initialization process has failed
+//  */
+// void onBleInitError(BLE &ble, ble_error_t error)
+// {
+//     /* Avoid compiler warnings */
+//     (void) ble;
+//     (void) error;
+//     /* Initialization error handling should go here */
+// }
  
-/**
- * Callback triggered when the ble initialization process has finished
- */
-void bleInitComplete(BLE::InitializationCompleteCallbackContext *params)
-{
-    BLE&        ble   = params->ble;
-    ble_error_t error = params->error;
+// /**
+//  * Callback triggered when the ble initialization process has finished
+//  */
+// void bleInitComplete(BLE::InitializationCompleteCallbackContext *params)
+// {
+//     BLE&        ble   = params->ble;
+//     ble_error_t error = params->error;
  
-    if (error != BLE_ERROR_NONE) {
-        /* In case of error, forward the error handling to onBleInitError */
-        onBleInitError(ble, error);
-        return;
-    }
+//     if (error != BLE_ERROR_NONE) {
+//         /* In case of error, forward the error handling to onBleInitError */
+//         onBleInitError(ble, error);
+//         return;
+//     }
  
-    /* Ensure that it is the default instance of BLE */
-    if(ble.getInstanceID() != BLE::DEFAULT_INSTANCE) {
-        return;
-    }
+//     /* Ensure that it is the default instance of BLE */
+//     if(ble.getInstanceID() != BLE::DEFAULT_INSTANCE) {
+//         return;
+//     }
     
-    ble.gap().onDisconnection(disconnectionCallback);
+//     ble.gap().onDisconnection(disconnectionCallback);
     
-    ble.gattServer().onDataWritten(writeCharCallback);
-    /* Setup primary service. */
-    thermometerServicePtr = new HealthThermometerService(ble, currentTemperature,4);
-    /* setup advertising */
-    ble.gap().accumulateAdvertisingPayload(GapAdvertisingData::BREDR_NOT_SUPPORTED | GapAdvertisingData::LE_GENERAL_DISCOVERABLE);
-    ble.gap().accumulateAdvertisingPayload(GapAdvertisingData::COMPLETE_LIST_32BIT_SERVICE_IDS, (uint8_t *)uuid16_list, sizeof(uuid16_list));
-    ble.gap().accumulateAdvertisingPayload(10);
-    ble.gap().accumulateAdvertisingPayload(GapAdvertisingData::COMPLETE_LOCAL_NAME, (uint8_t *)DEVICE_NAME, sizeof(DEVICE_NAME));
-    ble.gap().setAdvertisingType(GapAdvertisingParams::ADV_CONNECTABLE_UNDIRECTED); 
-    ble.gap().setAdvertisingInterval(100); /* 1000ms */
-    ble.addService(customService); 
-    ble.gap().startAdvertising();
+//     ble.gattServer().onDataWritten(writeCharCallback);
+//     /* Setup primary service. */
+//     thermometerServicePtr = new HealthThermometerService(ble, currentTemperature,4);
+//     /* setup advertising */
+//     ble.gap().accumulateAdvertisingPayload(GapAdvertisingData::BREDR_NOT_SUPPORTED | GapAdvertisingData::LE_GENERAL_DISCOVERABLE);
+//     ble.gap().accumulateAdvertisingPayload(GapAdvertisingData::COMPLETE_LIST_32BIT_SERVICE_IDS, (uint8_t *)uuid16_list, sizeof(uuid16_list));
+//     ble.gap().accumulateAdvertisingPayload(10);
+//     ble.gap().accumulateAdvertisingPayload(GapAdvertisingData::COMPLETE_LOCAL_NAME, (uint8_t *)DEVICE_NAME, sizeof(DEVICE_NAME));
+//     ble.gap().setAdvertisingType(GapAdvertisingParams::ADV_CONNECTABLE_UNDIRECTED); 
+//     ble.gap().setAdvertisingInterval(100); /* 1000ms */
+//     ble.addService(customService); 
+//     ble.gap().startAdvertising();
     
-}
+// }
 
-int main(void)
-{
+// int main(void)
+// {
     
+//     led1 = 1;
     
+//     Ticker ticker;
+//     ticker.attach(periodicCallback, 0.04);
+//     button1.rise(&click);
+//     BLE &ble = BLE::Instance();
+//     ble.init(bleInitComplete);
+    
+//     /* SpinWait for initialization to complete. This is necessary because the
+//      * BLE object is used in the main loop below. */
+//     while (ble.hasInitialized()  == false) { /* spin loop */ }
 
-
-    
-    
-    led1 = 1;
-    
-    Ticker ticker;
-    ticker.attach(periodicCallback, 0.04);
-    button1.rise(&click);
-    BLE &ble = BLE::Instance();
-    ble.init(bleInitComplete);
-    
-    /* SpinWait for initialization to complete. This is necessary because the
-     * BLE object is used in the main loop below. */
-    while (ble.hasInitialized()  == false) { /* spin loop */ }
-
-    while (true)
-    {
-        if (triggerSensorPolling && ble.gap().getState().connected)
-        {
-            triggerSensorPolling = false;
-            blik();
-            if (trigger)
-            {
+//     while (true)
+//     {
+//         if (triggerSensorPolling && ble.gap().getState().connected)
+//         {
+//             triggerSensorPolling = false;
+//             blik();
+//             if (trigger)
+//             {
   
-                if (i<5000)
-                {
-                thermometerServicePtr->testloop(&temp[i]);
-                thermometerServicePtr->testloop2(array_BPM);
-                i+=10;
-                }
-                else  // initialising to default value
-                {
-                    trigger=false;
-                    i=0;
-                }
-            }
-        }
-        else
-        {
-        ble.waitForEvent();
-        }
-    }
-}
+//                 if (i<5000)
+//                 {
+//                 thermometerServicePtr->testloop(&temp[i]);
+//                 thermometerServicePtr->testloop2(array_BPM);
+//                 i+=10;
+//                 }
+//                 else  // initialising to default value
+//                 {
+//                     trigger=false;
+//                     i=0;
+//                 }
+//             }
+//         }
+//         else
+//         {
+//         ble.waitForEvent();
+//         }
+//     }
+// }
 
 /* mbed Microcontroller Library
  * Copyright (c) 2006-2015 ARM Limited
