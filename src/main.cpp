@@ -1,7 +1,4 @@
-
-
 #include "mbed.h"
- 
 DigitalOut myled(LED1);
 DigitalOut led2(LED2);
  
@@ -13,7 +10,6 @@ int main() {
         
     }
 }
-
 
 /*
 #include "mbed.h"
